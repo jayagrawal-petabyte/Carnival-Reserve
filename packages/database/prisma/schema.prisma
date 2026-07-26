@@ -1,0 +1,196 @@
+// Carnival Reserve - Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PARTICIPANT
+  TREASURY_MANAGER // 17 managers (Domain Managers)
+  MAGEFFICIE_MANAGER // Marketplace / Spend booth manager
+  SUPER_ADMIN // 2 Super Admins
+}
+
+enum TransactionType {
+  REGISTRATION_SEED
+  PARTICIPATION_CREDIT
+  WINNER_CREDIT
+  MAGEFFICIE_PURCHASE
+  AUCTION_HOLD
+  AUCTION_SETTLE
+  AUCTION_REFUND
+}
+
+enum AuctionBidStatus {
+  ACTIVE
+  OUTBID
+  WON
+  SETTLED
+  CANCELLED
+}
+
+model User {
+  id               String       @id @default(uuid())
+  email            String       @unique
+  passwordHash     String
+  name             String
+  role             Role         @default(PARTICIPANT)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  participant      Participant?
+  devices          Device[]
+  managedTreasury  DomainTreasury?
+  transactionsMade Transaction[] @relation("ManagerTransactions")
+
+  @@index([role])
+}
+
+model Participant {
+  id               String       @id @default(uuid())
+  userId           String       @unique
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  regNo            String       @unique
+  phone            String
+  qrCode           String       @unique // Contains participant_id ONLY
+
+  wallet           Wallet?
+  passport         Passport?
+  transactions     Transaction[] @relation("ParticipantTransactions")
+  auctionBids      AuctionBid[]
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model Wallet {
+  id               String       @id @default(uuid())
+  participantId    String       @unique
+  participant      Participant  @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  
+  balance          Int          @default(0) // Balance in Crn
+  totalEarned      Int          @default(0)
+  totalSpent       Int          @default(0)
+  
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([participantId])
+}
+
+model DomainTreasury {
+  id                     String   @id @default(uuid())
+  domainName             String   @unique // 17 festival domains (e.g., Coding, Gaming, Robotics, Music...)
+  managerId              String?  @unique
+  manager                User?    @relation(fields: [managerId], references: [id])
+  
+  balance                Int      @default(0) // Allocated budget for domain
+  participationRemaining Int      @default(0) // Server-enforced participation counter (Ceiling N * 50)
+  winnerSlotsRemaining   Int      @default(16) // Max 16 winners per domain
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model Passport {
+  id            String          @id @default(uuid())
+  participantId String          @unique
+  participant   Participant     @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  stamps        PassportStamp[]
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model PassportStamp {
+  id           String    @id @default(uuid())
+  passportId   String
+  passport     Passport  @relation(fields: [passportId], references: [id], onDelete: Cascade)
+  domainName   String
+  claimedAt    DateTime  @default(now())
+  isWinner     Boolean   @default(false)
+
+  @@unique([passportId, domainName])
+  @@index([passportId])
+}
+
+model Transaction {
+  id             String          @id @default(uuid())
+  idempotencyKey String          @unique // Client-generated UUID for deduplication
+  amount         Int
+  type           TransactionType
+  
+  fromAccountId  String?         // Could be Participant Wallet, DomainTreasury, or System Pool
+  toAccountId    String?         // Could be Participant Wallet, DomainTreasury, or Magefficie Treasury
+  
+  participantId  String?
+  participant    Participant?    @relation("ParticipantTransactions", fields: [participantId], references: [id])
+  
+  managerId      String?
+  manager        User?           @relation("ManagerTransactions", fields: [managerId], references: [id])
+  
+  proofPhotoUrl  String?         // Mandatory for WINNER_CREDIT and MAGEFFICIE_PURCHASE
+  timestamp      DateTime        @default(now())
+  
+  @@index([idempotencyKey])
+  @@index([participantId])
+  @@index([managerId])
+  @@index([type])
+}
+
+model InventoryItem {
+  id             String       @id @default(uuid())
+  name           String
+  tier           Int          // 1: 100-300, 2: 500-900, 3: 1000-1800, 4: Auction
+  price          Int          // Base price or starting bid for Tier 4
+  openingCount   Int
+  soldCount      Int          @default(0)
+  availableCount Int
+  reservedCount  Int          @default(0) // Reserved for active auction bids
+  imageUrl       String?
+
+  auctionBids    AuctionBid[]
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([tier])
+}
+
+model Device {
+  id                String   @id @default(uuid())
+  managerId         String
+  manager           User     @relation(fields: [managerId], references: [id], onDelete: Cascade)
+  deviceName        String
+  deviceFingerprint String   @unique
+  location          String?
+  approved          Boolean  @default(false) // Max 2 approved devices per manager account
+  lastLogin         DateTime @default(now())
+  ipAddress         String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([managerId])
+}
+
+model AuctionBid {
+  id            String           @id @default(uuid())
+  itemId        String
+  item          InventoryItem    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  participantId String
+  participant   Participant      @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  bidAmount     Int
+  status        AuctionBidStatus @default(ACTIVE)
+
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([itemId])
+  @@index([participantId])
+}

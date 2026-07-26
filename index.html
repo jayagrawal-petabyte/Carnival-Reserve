@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Carnival Reserve — Neo-Brutalist Currency Tracker</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          borderWidth: {
+            '3': '3px',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #FAF7F2;
+      background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    ::selection {
+      background: #FFE600;
+      color: #000;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const DOMAINS = [
+      { name: 'Coding & Algo', category: 'Tech', icon: '⚡', color: 'bg-[#FFE600]' },
+      { name: 'E-Sports Arena', category: 'Gaming', icon: '🎮', color: 'bg-[#00E5FF]' },
+      { name: 'Robotics Wars', category: 'Tech', icon: '🤖', color: 'bg-[#FF007A]' },
+      { name: 'Battle of Bands', category: 'Music', icon: '🎸', color: 'bg-[#70FF00]' },
+      { name: 'Street Dance', category: 'Arts', icon: '💃', color: 'bg-[#C084FC]' },
+      { name: 'Fine Arts', category: 'Arts', icon: '🎨', color: 'bg-[#FF6B35]' },
+      { name: 'Mono Act Drama', category: 'Arts', icon: '🎭', color: 'bg-[#FFE600]' },
+      { name: 'General Quiz', category: 'Academic', icon: '🧠', color: 'bg-[#00E5FF]' },
+      { name: 'Fashion Runway', category: 'Lifestyle', icon: '✨', color: 'bg-[#FF007A]' },
+      { name: 'UI/UX Design', category: 'Tech', icon: '✏️', color: 'bg-[#70FF00]' },
+      { name: 'Shutterbug Photo', category: 'Arts', icon: '📷', color: 'bg-[#C084FC]' },
+      { name: 'Hackathon 24H', category: 'Tech', icon: '💻', color: 'bg-[#FF6B35]' },
+      { name: 'VR Immersion', category: 'Tech', icon: '🥽', color: 'bg-[#FFE600]' },
+      { name: 'Parliamentary Debate', category: 'Literary', icon: '🎙️', color: 'bg-[#00E5FF]' },
+      { name: 'Treasure Hunt', category: 'Adventure', icon: '🗺️', color: 'bg-[#FF007A]' },
+      { name: 'Cosplay Showcase', category: 'Arts', icon: '🦊', color: 'bg-[#70FF00]' },
+      { name: 'Magefficie Hub', category: 'Market', icon: '🎪', color: 'bg-[#C084FC]' }
+    ];
+
+    const INVENTORY_ITEMS = [
+      { id: '1', name: 'Pop Art Sticker Pack', tier: 1, price: 150, image: '🏷️', tag: 'Must Have', available: 120, bg: 'bg-[#FFE600]' },
+      { id: '2', name: 'Carnival Crunch Snacks', tier: 1, price: 250, image: '🍿', tag: 'Tasty', available: 85, bg: 'bg-[#00E5FF]' },
+      { id: '3', name: 'Embroidered Log Notebook', tier: 2, price: 650, image: '📓', tag: 'Limited', available: 45, bg: 'bg-[#C084FC]' },
+      { id: '4', name: 'Enamel Champion Badge', tier: 2, price: 550, image: '🏅', tag: 'Popular', available: 60, bg: 'bg-[#70FF00]' },
+      { id: '5', name: 'Festival Canvas Tote', tier: 3, price: 1200, image: '🛍️', tag: 'Premium', available: 25, bg: 'bg-[#FF6B35]' },
+      { id: '6', name: 'Carnival Snapback Cap', tier: 3, price: 1500, image: '🧢', tag: 'Hot', available: 15, bg: 'bg-[#FFE600]' },
+      { id: '7', name: 'Celebrity Concert Hoodie', tier: 4, price: 2500, image: '🧥', tag: 'Auction', available: 2, currentBid: 3100, isAuction: true, bg: 'bg-[#FF007A]' },
+      { id: '8', name: 'VIP Pass & Artist Backstage', tier: 4, price: 4000, image: '🎟️', tag: 'Auction', available: 1, currentBid: 5200, isAuction: true, bg: 'bg-[#00E5FF]' },
+    ];
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('passport');
+      const [balance, setBalance] = useState(850);
+      const [claimedDomains, setClaimedDomains] = useState({
+        'Coding & Algo': { winner: true, time: '11:30 AM' },
+        'General Quiz': { winner: false, time: '01:15 PM' },
+        'Hackathon 24H': { winner: false, time: '03:40 PM' },
+        'Battle of Bands': { winner: true, time: '04:10 PM' },
+      });
+      const [searchQuery, setSearchQuery] = useState('');
+      const [bidAmount, setBidAmount] = useState(3500);
+      const [notification, setNotification] = useState('🎉 Welcome to Carnival Reserve! 4 Domain Stamps Collected.');
+
+      const handleSimulateCredit = (domainName, isWinner) => {
+        const reward = isWinner ? 250 : 50;
+        setBalance(prev => prev + reward);
+        setClaimedDomains(prev => ({
+          ...prev,
+          [domainName]: { winner: isWinner, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+        }));
+        setNotification(`⚡ Credited +${reward} Crn from ${domainName} (${isWinner ? 'Winner' : 'Participation'})!`);
+        setTimeout(() => setNotification(null), 4000);
+      };
+
+      const handlePlaceAuctionBid = (itemTitle) => {
+        if (bidAmount > balance) {
+          alert(`Insufficient balance! Your current Treasury Balance is ${balance} Crn.`);
+          return;
+        }
+        setBalance(prev => prev - bidAmount);
+        setNotification(`🏷️ Bid Hold Placed! Reserved ${bidAmount} Crn on ${itemTitle}.`);
+        setTimeout(() => setNotification(null), 5000);
+      };
+
+      const totalStampsCount = Object.keys(claimedDomains).length;
+      const stampPercentage = Math.round((totalStampsCount / 17) * 100);
+
+      return (
+        <div className="min-h-screen pb-24 text-black">
+          {/* Header Bar */}
+          <header className="sticky top-0 z-30 bg-[#FAF7F2] border-b-3 border-black px-4 py-3 shadow-[0_4px_0_0_#000]">
+            <div className="max-w-md mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-[#FFE600] border-2 border-black flex items-center justify-center font-black text-lg shadow-[2px_2px_0_0_#000]">
+                  🎠
+                </div>
+                <div>
+                  <h1 className="font-black text-lg uppercase tracking-tight leading-none text-black flex items-center gap-1">
+                    CARNIVAL <span className="bg-[#FF007A] text-white px-1.5 py-0.5 text-xs rounded border border-black transform -rotate-2 inline-block">RESERVE</span>
+                  </h1>
+                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">ID: 21BCE1042 • Sza Patel</p>
+                </div>
+              </div>
+
+              <div className="bg-[#FFE600] border-3 border-black rounded-2xl px-3 py-1 text-right shadow-[3px_3px_0_0_#000] flex items-center gap-2">
+                <div>
+                  <span className="text-[9px] font-black uppercase text-black block leading-none">Treasury Balance</span>
+                  <span className="text-lg font-black text-black leading-none">{balance} <span className="text-xs">Crn</span></span>
+                </div>
+                <span className="text-xl">💰</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="max-w-md mx-auto px-4 pt-5 space-y-5">
+            {notification && (
+              <div className="bg-[#70FF00] border-3 border-black rounded-xl p-3 text-xs font-black uppercase shadow-[4px_4px_0_0_#000] flex items-center justify-between">
+                <span>{notification}</span>
+                <button onClick={() => setNotification(null)} className="font-bold text-sm">✕</button>
+              </div>
+            )}
+
+            {/* Mascot Banner */}
+            <div className="relative bg-white border-3 border-black rounded-2xl p-5 shadow-[5px_5px_0_0_#000]">
+              <div className="absolute -top-3 right-4 bg-[#FF007A] text-white text-[10px] font-black uppercase px-3 py-0.5 rounded-full border-2 border-black shadow-[2px_2px_0_0_#000]">
+                Live Event Pass ★
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-[#00E5FF] border-3 border-black flex items-center justify-center text-3xl shadow-[3px_3px_0_0_#000] transform -rotate-3">
+                    😎
+                  </div>
+                  <span className="absolute -bottom-1 -right-1 bg-[#FFE600] border-2 border-black rounded-full px-1.5 text-[9px] font-black">
+                    VIP
+                  </span>
+                </div>
+
+                <div className="flex-1">
+                  <h2 className="text-xl font-black uppercase tracking-tight leading-snug">
+                    Your Mind & <span className="bg-[#FFE600] px-1 border-b-3 border-black">Wallet Matter!</span> ⚡
+                  </h2>
+                  <p className="text-xs font-bold text-slate-600 mt-1">
+                    Explore 17 domain booths, collect stamps, and bid on Tier 4 drops.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t-3 border-black flex items-center justify-between bg-[#FAF7F2] rounded-xl p-3 border-2 border-black">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#FFE600] border-2 border-black flex items-center justify-center font-black text-sm shadow-[2px_2px_0_0_#000]">
+                    {stampPercentage}%
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-slate-500 block">Passport Progress</span>
+                    <span className="text-xs font-black text-black">{totalStampsCount} / 17 Domains Collected</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-1">
+                  {[...Array(6)].map((_, i) => (
+                    <span
+                      key={i}
+                      className={`w-2.5 h-2.5 rounded-full border border-black ${
+                        i < totalStampsCount ? 'bg-[#FF007A]' : 'bg-white'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Pill Tabs */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+              {[
+                { id: 'passport', label: 'Stamps', icon: '🎫', color: 'bg-[#FFE600]' },
+                { id: 'qr', label: 'My QR', icon: '📱', color: 'bg-[#00E5FF]' },
+                { id: 'shop', label: 'Market', icon: '🛍️', color: 'bg-[#70FF00]' },
+                { id: 'auction', label: 'Auction', icon: '🔨', color: 'bg-[#FF007A]' },
+                { id: 'leaderboard', label: 'Ranks', icon: '👑', color: 'bg-[#C084FC]' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-2 rounded-full font-black text-xs uppercase border-3 border-black flex items-center gap-1.5 transition-all whitespace-nowrap shadow-[3px_3px_0_0_#000] ${
+                    activeTab === tab.id
+                      ? `${tab.color} text-black border-black scale-105`
+                      : 'bg-white text-black hover:bg-slate-50'
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Passport Stamps Tab */}
+            {activeTab === 'passport' && (
+              <div className="border-3 border-black rounded-2xl p-5 bg-white shadow-[5px_5px_0_0_#000]">
+                <div className="flex items-center justify-between border-b-3 border-black pb-3 mb-4">
+                  <h3 className="font-black text-lg uppercase">17 Domain Passport</h3>
+                  <span className="bg-[#FFE600] border-2 border-black rounded-full px-3 py-0.5 text-xs font-bold uppercase shadow-[2px_2px_0_0_#000]">
+                    {totalStampsCount}/17 Claimed
+                  </span>
+                </div>
+
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="🔍 Search domains (e.g. Coding, Quiz)..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full border-3 border-black rounded-xl p-2.5 text-xs font-bold bg-[#FAF7F2] shadow-[3px_3px_0_0_#000]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  {DOMAINS.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase())).map((domain) => {
+                    const stamp = claimedDomains[domain.name];
+                    return (
+                      <div
+                        key={domain.name}
+                        className={`border-3 border-black rounded-xl p-3 flex flex-col justify-between ${
+                          stamp
+                            ? stamp.winner
+                              ? 'bg-[#FFE600] shadow-[3px_3px_0_0_#000]'
+                              : 'bg-[#00E5FF] shadow-[3px_3px_0_0_#000]'
+                            : 'bg-white'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <span className="text-xl">{domain.icon}</span>
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded border border-black bg-white uppercase">
+                            {domain.category}
+                          </span>
+                        </div>
+
+                        <div className="mt-2">
+                          <h4 className="font-black text-xs uppercase leading-snug">{domain.name}</h4>
+                          {stamp ? (
+                            <div className="mt-2 pt-1 border-t-2 border-black flex items-center justify-between">
+                              <span className="text-[9px] font-black uppercase text-black">
+                                {stamp.winner ? '🏆 Winner +250' : '✅ Claimed +50'}
+                              </span>
+                              <span className="text-[8px] font-bold text-slate-700">{stamp.time}</span>
+                            </div>
+                          ) : (
+                            <div className="mt-2 flex gap-1">
+                              <button
+                                onClick={() => handleSimulateCredit(domain.name, false)}
+                                className="w-full text-[9px] font-black uppercase py-1 bg-white border-2 border-black rounded shadow-[1px_1px_0_0_#000]"
+                              >
+                                +50 Crn
+                              </button>
+                              <button
+                                onClick={() => handleSimulateCredit(domain.name, true)}
+                                className="w-full text-[9px] font-black uppercase py-1 bg-[#FF007A] text-white border-2 border-black rounded shadow-[1px_1px_0_0_#000]"
+                              >
+                                +250 Crn
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* QR Pass Tab */}
+            {activeTab === 'qr' && (
+              <div className="border-3 border-black rounded-2xl p-5 bg-white shadow-[5px_5px_0_0_#000] text-center">
+                <div className="border-b-3 border-black pb-3 mb-4 text-left">
+                  <h3 className="font-black text-lg uppercase">Participant QR Code</h3>
+                </div>
+
+                <div className="inline-block border-3 border-black rounded-2xl p-5 bg-[#FFE600] shadow-[6px_6px_0_0_#000]">
+                  <div className="bg-white border-3 border-black rounded-xl p-4">
+                    <svg width="180" height="180" viewBox="0 0 100 100" className="mx-auto">
+                      <rect x="5" y="5" width="25" height="25" fill="black" />
+                      <rect x="10" y="10" width="15" height="15" fill="white" />
+                      <rect x="13" y="13" width="9" height="9" fill="black" />
+                      
+                      <rect x="70" y="5" width="25" height="25" fill="black" />
+                      <rect x="75" y="10" width="15" height="15" fill="white" />
+                      <rect x="78" y="13" width="9" height="9" fill="black" />
+
+                      <rect x="5" y="70" width="25" height="25" fill="black" />
+                      <rect x="10" y="75" width="15" height="15" fill="white" />
+                      <rect x="13" y="78" width="9" height="9" fill="black" />
+
+                      <rect x="35" y="35" width="10" height="10" fill="black" />
+                      <rect x="50" y="35" width="15" height="10" fill="black" />
+                      <rect x="35" y="50" width="25" height="15" fill="black" />
+                      <rect x="65" y="65" width="15" height="15" fill="black" />
+                    </svg>
+                  </div>
+                  <div className="mt-3 bg-black text-[#FFE600] font-mono text-xs font-black py-1.5 px-3 rounded-lg border border-black">
+                    part_9f83a21e-84b2-4d3f
+                  </div>
+                </div>
+
+                <p className="mt-4 text-xs font-bold text-slate-600 uppercase">
+                  Encodes ONLY participant_id • Verified on-chain via Prisma Ledger
+                </p>
+              </div>
+            )}
+
+            {/* Shop & Auction Tabs */}
+            {(activeTab === 'shop' || activeTab === 'auction') && (
+              <div className="space-y-3">
+                {INVENTORY_ITEMS.filter(item => activeTab === 'auction' ? item.isAuction : !item.isAuction).map((item) => (
+                  <div key={item.id} className="border-3 border-black rounded-2xl p-4 shadow-[5px_5px_0_0_#000] bg-white">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-14 h-14 rounded-2xl ${item.bg} border-3 border-black flex items-center justify-center text-3xl shadow-[3px_3px_0_0_#000]`}>
+                          {item.image}
+                        </div>
+                        <div>
+                          <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-black bg-[#FFE600]">
+                            Tier {item.tier}
+                          </span>
+                          <h4 className="font-black text-sm uppercase text-black mt-1">{item.name}</h4>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-base font-black block text-black">{item.price} Crn</span>
+                        <span className="text-[10px] font-bold text-slate-500 block">{item.available} in stock</span>
+                      </div>
+                    </div>
+
+                    {item.isAuction && (
+                      <div className="mt-3 pt-3 border-t-3 border-black bg-[#FAF7F2] rounded-xl p-3">
+                        <div className="flex items-center justify-between text-xs font-black mb-2">
+                          <span>Current Bid: <strong className="text-[#FF007A]">{item.currentBid} Crn</strong></span>
+                          <span className="bg-[#FFE600] border border-black px-2 py-0.5 rounded text-[10px]">⏰ Ends 06:00 PM</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            defaultValue={item.currentBid + 200}
+                            onChange={(e) => setBidAmount(Number(e.target.value))}
+                            className="border-3 border-black rounded-xl px-3 py-1.5 text-xs font-mono font-bold w-full bg-white shadow-[2px_2px_0_0_#000]"
+                          />
+                          <button
+                            onClick={() => handlePlaceAuctionBid(item.name)}
+                            className="px-4 py-1.5 rounded-full bg-[#FF007A] text-white border-3 border-black font-black text-xs uppercase shadow-[2px_2px_0_0_#000]"
+                          >
+                            BID HOLD
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Leaderboard Tab */}
+            {activeTab === 'leaderboard' && (
+              <div className="border-3 border-black rounded-2xl p-5 bg-white shadow-[5px_5px_0_0_#000]">
+                <div className="border-b-3 border-black pb-3 mb-4">
+                  <h3 className="font-black text-lg uppercase">Leaderboard</h3>
+                  <p className="text-[10px] font-bold text-slate-600 uppercase">Privacy Guard Active: Balances masked for all other participants</p>
+                </div>
+
+                <div className="space-y-2.5">
+                  {[
+                    { rank: 1, name: 'Aarav Sharma', reg: '21BCE***', balance: undefined, isSelf: false, avatar: '👑' },
+                    { rank: 2, name: 'Ananya Verma', reg: '21BIT***', balance: undefined, isSelf: false, avatar: '⭐' },
+                    { rank: 3, name: 'Sza Patel (You)', reg: '21BCE1042', balance: balance, isSelf: true, avatar: '😎' },
+                    { rank: 4, name: 'Rohan Mehta', reg: '21BME***', balance: undefined, isSelf: false, avatar: '🚀' },
+                    { rank: 5, name: 'Priya Nair', reg: '21ECE***', balance: undefined, isSelf: false, avatar: '🎨' },
+                  ].map((entry) => (
+                    <div
+                      key={entry.rank}
+                      className={`border-3 border-black rounded-xl p-3 flex items-center justify-between ${
+                        entry.isSelf ? 'bg-[#FFE600] font-black shadow-[4px_4px_0_0_#000]' : 'bg-white shadow-[2px_2px_0_0_#000]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-black text-white font-black text-xs flex items-center justify-center border-2 border-black">
+                          #{entry.rank}
+                        </div>
+                        <span className="text-xl">{entry.avatar}</span>
+                        <div>
+                          <span className="text-xs font-black uppercase block text-black">{entry.name}</span>
+                          <span className="text-[10px] font-mono font-bold text-slate-600">{entry.reg}</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        {entry.isSelf ? (
+                          <span className="text-sm font-black text-black bg-white px-2.5 py-1 rounded-lg border-2 border-black">
+                            {entry.balance} Crn
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-100 px-2 py-1 rounded border border-slate-300">
+                            🔒 Hidden
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
