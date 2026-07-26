@@ -1,0 +1,22 @@
+{
+  "name": "carnival-reserve-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:web": "next dev -p 3000",
+    "dev:admin": "next dev -p 3001",
+    "dev:volunteer": "next dev -p 3002",
+    "prisma:generate": "prisma generate --schema=packages/database/prisma/schema.prisma",
+    "prisma:push": "prisma db push --schema=packages/database/prisma/schema.prisma",
+    "test:load": "locust -f load-testing/locustfile.py"
+  },
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "prisma": "^5.0.0"
+  }
+}

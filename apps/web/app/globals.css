@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Grid paper pattern inspired by image 1 */
+  .bg-grid-paper {
+    background-color: #FAF7F2;
+    background-image: 
+      linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Neo-Brutalist Hard Shadows */
+  .neo-shadow-sm {
+    box-shadow: 3px 3px 0px 0px #000000;
+  }
+  .neo-shadow {
+    box-shadow: 5px 5px 0px 0px #000000;
+  }
+  .neo-shadow-lg {
+    box-shadow: 8px 8px 0px 0px #000000;
+  }
+  .neo-shadow-pink {
+    box-shadow: 5px 5px 0px 0px #FF007A;
+  }
+  .neo-shadow-yellow {
+    box-shadow: 5px 5px 0px 0px #FFE600;
+  }
+
+  /* Stacked paper outline effect inspired by image 1 & image 3 */
+  .neo-stack {
+    position: relative;
+  }
+  .neo-stack::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    right: -6px;
+    bottom: -6px;
+    background: #000000;
+    z-index: -1;
+  }
+  .neo-stack::after {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: -12px;
+    bottom: -12px;
+    background: #FFE600;
+    border: 3px solid #000000;
+    z-index: -2;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF7F2;
+  border-left: 2px solid #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #FFE600;
+  border: 2px solid #000;
+}
+
+::selection {
+  background: #FFE600;
+  color: #000;
+}
