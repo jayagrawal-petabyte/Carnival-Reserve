@@ -77,7 +77,7 @@ export default function NeoBrutalistApp() {
   const stampPercentage = Math.round((totalStampsCount / 17) * 100);
 
   return (
-    <div className="bg-grid-paper min-h-screen pb-24 text-black selection:bg-[#FFE600]">
+    <div className="bg-grid-paper min-h-screen pb-28 text-black selection:bg-[#FFE600]">
       {/* Top Banner & Header */}
       <header className="sticky top-0 z-30 bg-[#FAF7F2] border-b-3 border-black px-4 py-3 shadow-[0_4px_0_0_#000]">
         <div className="max-w-md mx-auto flex items-center justify-between">
@@ -165,30 +165,6 @@ export default function NeoBrutalistApp() {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* PILL NAVIGATION BADGES (Inspired by Image 1 Self-Care Category Pills) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {[
-            { id: 'passport', label: 'Stamps', icon: '🎫', color: 'bg-[#FFE600]' },
-            { id: 'qr', label: 'My QR', icon: '📱', color: 'bg-[#00E5FF]' },
-            { id: 'shop', label: 'Market', icon: '🛍️', color: 'bg-[#70FF00]' },
-            { id: 'auction', label: 'Auction', icon: '🔨', color: 'bg-[#FF007A]' },
-            { id: 'leaderboard', label: 'Ranks', icon: '👑', color: 'bg-[#C084FC]' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-full font-black text-xs uppercase border-3 border-black flex items-center gap-1.5 transition-all whitespace-nowrap shadow-[3px_3px_0_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
-                activeTab === tab.id
-                  ? `${tab.color} text-black border-black scale-105`
-                  : 'bg-white text-black hover:bg-slate-50'
-              }`}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
         </div>
 
         {/* TAB 1: DIGITAL PASSPORT STAMPS */}
@@ -435,6 +411,37 @@ export default function NeoBrutalistApp() {
           </NeoCard>
         )}
       </main>
+
+      {/* Bottom Fixed App Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#FAF7F2] border-t-3 border-black px-2 py-2.5 shadow-[0_-4px_0_0_#000]">
+        <div className="max-w-md mx-auto grid grid-cols-5 gap-1.5 text-center">
+          {[
+            { id: 'passport', label: 'Stamps', icon: '🎫', color: 'bg-[#FFE600]' },
+            { id: 'qr', label: 'My QR', icon: '📱', color: 'bg-[#00E5FF]' },
+            { id: 'shop', label: 'Market', icon: '🛍️', color: 'bg-[#70FF00]' },
+            { id: 'auction', label: 'Auction', icon: '🔨', color: 'bg-[#FF007A]' },
+            { id: 'leaderboard', label: 'Ranks', icon: '👑', color: 'bg-[#C084FC]' },
+          ].map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border-2 border-black transition-all ${
+                  isActive
+                    ? `${tab.color} shadow-[2px_2px_0_0_#000] -translate-y-1 font-black text-black`
+                    : 'bg-white text-black hover:bg-slate-50 font-bold shadow-[1px_1px_0_0_#000]'
+                }`}
+              >
+                <span className="text-xl leading-none mb-1">{tab.icon}</span>
+                <span className="text-[10px] uppercase font-black tracking-tight leading-none whitespace-nowrap">
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
